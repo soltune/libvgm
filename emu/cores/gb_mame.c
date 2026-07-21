@@ -408,7 +408,10 @@ static void gb_sound_w_internal(gb_sound_t *gb, UINT8 offset, UINT8 data)
 				gb->snd[0].on = true;
 				gb->snd[0].envelope_enabled = true;
 				gb->snd[0].envelope_value = gb->snd[0].reg[2] >> 4;
-				gb->snd[0].envelope_count = gb->snd[0].envelope_time;
+				// On trigger the first envelope tick comes a full period after the
+				// trigger (per hardware/SameBoy), not at the next global 64 Hz tick;
+				// otherwise short low-volume notes get cut depending on phase.
+				gb->snd[0].envelope_count = gb->snd[0].envelope_time + (gb->snd[0].envelope_time ? 1 : 0);
 				gb->snd[0].sweep_count = gb->snd[0].sweep_time;
 				gb->snd[0].sweep_neg_mode_used = false;
 				gb->snd[0].signal = 0;
@@ -490,7 +493,10 @@ static void gb_sound_w_internal(gb_sound_t *gb, UINT8 offset, UINT8 data)
 				gb->snd[1].on = true;
 				gb->snd[1].envelope_enabled = true;
 				gb->snd[1].envelope_value = gb->snd[1].reg[2] >> 4;
-				gb->snd[1].envelope_count = gb->snd[1].envelope_time;
+				// On trigger the first envelope tick comes a full period after the
+				// trigger (per hardware/SameBoy), not at the next global 64 Hz tick;
+				// otherwise short low-volume notes get cut depending on phase.
+				gb->snd[1].envelope_count = gb->snd[1].envelope_time + (gb->snd[1].envelope_time ? 1 : 0);
 				gb->snd[1].frequency = ((gb->snd[1].reg[4] & 0x7) << 8) | gb->snd[1].reg[3];
 				gb->snd[1].frequency_counter = gb->snd[1].frequency;
 				gb->snd[1].cycles_left = 0;
@@ -631,7 +637,10 @@ static void gb_sound_w_internal(gb_sound_t *gb, UINT8 offset, UINT8 data)
 				gb->snd[3].on = true;
 				gb->snd[3].envelope_enabled = true;
 				gb->snd[3].envelope_value = gb->snd[3].reg[2] >> 4;
-				gb->snd[3].envelope_count = gb->snd[3].envelope_time;
+				// On trigger the first envelope tick comes a full period after the
+				// trigger (per hardware/SameBoy), not at the next global 64 Hz tick;
+				// otherwise short low-volume notes get cut depending on phase.
+				gb->snd[3].envelope_count = gb->snd[3].envelope_time + (gb->snd[3].envelope_time ? 1 : 0);
 				gb->snd[3].frequency_counter = 0;
 				gb->snd[3].cycles_left = gb_noise_period_cycles(gb);
 				gb->snd[3].signal = -1;
