@@ -1010,6 +1010,15 @@ static void gb_update_noise_channel(gb_sound_t *gb, struct SOUND *snd, UINT32 cy
 		UINT16 feedback;
 		snd->cycles_left -= period;
 
+		// Guard against the LFSR locking up silent: in 7-bit mode bit 6 is
+		// overwritten by the feedback, so if the low 7 bits are ever all
+		// zero (possible when a game switches NR43 to 7-bit mode shortly
+		// after a trigger, with VGM write timing quantized to the sample
+		// grid), the XOR feedback stays zero and the channel goes dead for
+		// the rest of the note. Real hardware timing avoids this state.
+		if (snd->noise_short && !(snd->noise_lfsr & 0x7f))
+			snd->noise_lfsr |= 1 << 6;
+
 		// Using a Polynomial Counter (aka Linear Feedback Shift Register)
 		// Channel 4 has a 15 bit counter so we need to shift the bits around accordingly.
 		feedback = ((snd->noise_lfsr >> 1) ^ snd->noise_lfsr) & 1;
