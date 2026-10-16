@@ -1113,7 +1113,8 @@ void VGMPlayer::Cmd_Ofs8_Data16(void)
 	if (cDev == NULL || cDev->writeD16 == NULL)
 		return;
 	
-	UINT16 value = ReadLE16(&fData[0x02]);
+	// big endian, as in VGMPlay 0.40.x (the only player that ever played ES5505/ES5506 VGMs)
+	UINT16 value = ReadBE16(&fData[0x02]);
 	cDev->writeD16(cDev->base.defInf.dataPtr, fData[0x01] & 0x7F, value);
 	return;
 }
