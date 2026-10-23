@@ -34,4 +34,4 @@ for b in $BRANCHES; do
 done
 
 cmake --build build -j8
-python3 fork/regress.py
+python3.14 fork/regress.py

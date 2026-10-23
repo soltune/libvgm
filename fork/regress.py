@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.14
 """Render the files in fork/regress.list with build/bin/vgm2wav and compare with reference renders.
 
 usage: fork/regress.py            compare (reference WAVs in $LIBVGM_REGRESS, default ~/tools/libvgm-regress)
