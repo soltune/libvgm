@@ -98,6 +98,7 @@ static UINT16 zsg2_r(void* info, UINT16 offset);
 static void zsg2_alloc_rom(void* info, UINT32 memsize);
 static void zsg2_write_rom(void* info, UINT32 offset, UINT32 length, const UINT8* data);
 static void zsg2_set_mute_mask(void* info, UINT32 MuteMask);
+static void zsg2_set_mute_mask_hi(void* info, UINT32 MuteMask);
 static void zsg2_set_options(void* info, UINT32 Flags);
 
 static DEVDEF_RWFUNC devFunc[] =
@@ -107,6 +108,7 @@ static DEVDEF_RWFUNC devFunc[] =
 	{RWF_MEMORY | RWF_WRITE, DEVRW_BLOCK, 0, (void*)zsg2_write_rom},
 	{RWF_MEMORY | RWF_WRITE, DEVRW_MEMSIZE, 0, (void*)zsg2_alloc_rom},
 	{RWF_CHN_MUTE | RWF_WRITE, DEVRW_ALL, 0, (void*)zsg2_set_mute_mask},
+	{RWF_CHN_MUTE | RWF_WRITE, DEVRW_ALL, RWFU_CHN_MUTE_HI, (void*)zsg2_set_mute_mask_hi},
 	{0x00, 0x00, 0, NULL}
 };
 static DEV_DEF devDef =
@@ -720,9 +722,19 @@ static void zsg2_set_mute_mask(void* info, UINT32 MuteMask)
 	zsg2_state* chip = (zsg2_state*)info;
 	int ch;
 
-	// 48 voices, the mask covers voices 0-31 (voices 32-47 follow bit 31)
-	for (ch = 0; ch < 48; ch++)
-		chip->chan[ch].muted = (MuteMask >> (ch < 32 ? ch : 31)) & 0x01;
+	// voices 0-31 (voices 32-47 are set via zsg2_set_mute_mask_hi)
+	for (ch = 0; ch < 32; ch++)
+		chip->chan[ch].muted = (MuteMask >> ch) & 0x01;
+}
+
+static void zsg2_set_mute_mask_hi(void* info, UINT32 MuteMask)
+{
+	zsg2_state* chip = (zsg2_state*)info;
+	int ch;
+
+	// voices 32-47
+	for (ch = 32; ch < 48; ch++)
+		chip->chan[ch].muted = (MuteMask >> (ch - 32)) & 0x01;
 }
 
 static void zsg2_set_options(void* info, UINT32 Flags)

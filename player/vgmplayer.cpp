@@ -725,7 +725,17 @@ void VGMPlayer::RefreshMuting(VGMPlayer::CHIP_DEVICE& chipDev, const PLR_MUTE_OP
 		if (devInf->dataPtr != NULL && devInf->devDef->SetMuteMask != NULL)
 			devInf->devDef->SetMuteMask(devInf->dataPtr, muteOpts.chnMute[linkCntr]);
 	}
-	
+
+	// devices without a linked device use chnMute[1] for channels 32-63 (e.g. ZSG-2 with 48 channels)
+	if (chipDev.base.linkDev == NULL && chipDev.base.defInf.dataPtr != NULL)
+	{
+		DEV_INFO* devInf = &chipDev.base.defInf;
+		DEVFUNC_OPTMASK funcMuteHi = NULL;
+		UINT8 retVal = SndEmu_GetDeviceFunc(devInf->devDef, RWF_CHN_MUTE | RWF_WRITE, DEVRW_ALL, RWFU_CHN_MUTE_HI, (void**)&funcMuteHi);
+		if (retVal != EERR_NOT_FOUND && funcMuteHi != NULL)
+			funcMuteHi(devInf->dataPtr, muteOpts.chnMute[1]);
+	}
+
 	return;
 }
 

@@ -70,6 +70,7 @@ typedef void (*DEVFUNC_WRITE_VOL_LR)(void* info, INT32 volL, INT32 volR);
 #define RWF_VOLUME		0x84	// volume (all speakers)
 #define RWF_VOLUME_LR	0x86	// volume (left/right separately)
 #define RWF_CHN_MUTE	0x90	// set channel muting (DEVRW_VALUE = single channel, DEVRW_ALL = mask)
+#define RWFU_CHN_MUTE_HI	0x01	// RWF_CHN_MUTE/DEVRW_ALL user value: mask for channels 32-63 (devices with >32 channels)
 #define RWF_CHN_PAN		0x92	// set channel panning (DEVRW_VALUE = single channel, DEVRW_ALL = array)
 
 // register/memory DEVRW constants
