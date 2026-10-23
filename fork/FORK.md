@@ -15,7 +15,9 @@ Upstream is ValleyBell/libvgm (remote `upstream`). This fork adds chips and fixe
 Each feature branch is a short series rebased on `upstream/master`, so it can be offered upstream as
 is. `chip-player` is never edited by hand: `fork/sync.sh` recreates it (and tags the previous one
 `backup/chip-player-*`), so pushing it needs `git push --force origin chip-player`.
-Fix things on the feature branch, then run `fork/sync.sh`.
+Fix things on the feature branch, then run `fork/sync.sh`. If a commit was made on `chip-player`
+anyway (here or on GitHub), the script finds it before changing anything and stops: move it to its
+feature branch with `git cherry-pick`, or rerun with `FORK_SYNC_DROP=1` to drop it on purpose.
 
 ## Updating from upstream
 
