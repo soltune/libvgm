@@ -408,7 +408,10 @@ static void gb_sound_w_internal(gb_sound_t *gb, UINT8 offset, UINT8 data)
 				gb->snd[0].on = true;
 				gb->snd[0].envelope_enabled = true;
 				gb->snd[0].envelope_value = gb->snd[0].reg[2] >> 4;
-				gb->snd[0].envelope_count = gb->snd[0].envelope_time;
+				// On trigger the first envelope tick comes a full period after the
+				// trigger (per hardware/SameBoy), not at the next global 64 Hz tick;
+				// otherwise short low-volume notes get cut depending on phase.
+				gb->snd[0].envelope_count = gb->snd[0].envelope_time + (gb->snd[0].envelope_time ? 1 : 0);
 				gb->snd[0].sweep_count = gb->snd[0].sweep_time;
 				gb->snd[0].sweep_neg_mode_used = false;
 				gb->snd[0].signal = 0;
@@ -490,7 +493,10 @@ static void gb_sound_w_internal(gb_sound_t *gb, UINT8 offset, UINT8 data)
 				gb->snd[1].on = true;
 				gb->snd[1].envelope_enabled = true;
 				gb->snd[1].envelope_value = gb->snd[1].reg[2] >> 4;
-				gb->snd[1].envelope_count = gb->snd[1].envelope_time;
+				// On trigger the first envelope tick comes a full period after the
+				// trigger (per hardware/SameBoy), not at the next global 64 Hz tick;
+				// otherwise short low-volume notes get cut depending on phase.
+				gb->snd[1].envelope_count = gb->snd[1].envelope_time + (gb->snd[1].envelope_time ? 1 : 0);
 				gb->snd[1].frequency = ((gb->snd[1].reg[4] & 0x7) << 8) | gb->snd[1].reg[3];
 				gb->snd[1].frequency_counter = gb->snd[1].frequency;
 				gb->snd[1].cycles_left = 0;
@@ -631,7 +637,10 @@ static void gb_sound_w_internal(gb_sound_t *gb, UINT8 offset, UINT8 data)
 				gb->snd[3].on = true;
 				gb->snd[3].envelope_enabled = true;
 				gb->snd[3].envelope_value = gb->snd[3].reg[2] >> 4;
-				gb->snd[3].envelope_count = gb->snd[3].envelope_time;
+				// On trigger the first envelope tick comes a full period after the
+				// trigger (per hardware/SameBoy), not at the next global 64 Hz tick;
+				// otherwise short low-volume notes get cut depending on phase.
+				gb->snd[3].envelope_count = gb->snd[3].envelope_time + (gb->snd[3].envelope_time ? 1 : 0);
 				gb->snd[3].frequency_counter = 0;
 				gb->snd[3].cycles_left = gb_noise_period_cycles(gb);
 				gb->snd[3].signal = -1;
@@ -1000,6 +1009,15 @@ static void gb_update_noise_channel(gb_sound_t *gb, struct SOUND *snd, UINT32 cy
 	{
 		UINT16 feedback;
 		snd->cycles_left -= period;
+
+		// Guard against the LFSR locking up silent: in 7-bit mode bit 6 is
+		// overwritten by the feedback, so if the low 7 bits are ever all
+		// zero (possible when a game switches NR43 to 7-bit mode shortly
+		// after a trigger, with VGM write timing quantized to the sample
+		// grid), the XOR feedback stays zero and the channel goes dead for
+		// the rest of the note. Real hardware timing avoids this state.
+		if (snd->noise_short && !(snd->noise_lfsr & 0x7f))
+			snd->noise_lfsr |= 1 << 6;
 
 		// Using a Polynomial Counter (aka Linear Feedback Shift Register)
 		// Channel 4 has a 15 bit counter so we need to shift the bits around accordingly.
