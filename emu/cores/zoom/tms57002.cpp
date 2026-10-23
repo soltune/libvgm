@@ -147,6 +147,15 @@ void tms57002_device::data_w(u8 data)
 		}
 		else
 		{
+			// The host sends the next update only after the DSP has taken the previous one.
+			// If it has not (a VGM seek processes writes without running the chip), apply
+			// the pending values to their address now, or they would land on the new one.
+			while (update_counter_head != update_counter_tail)
+			{
+				cmem[sa] = update[update_counter_tail];
+				update_counter_tail = (update_counter_tail + 1) & 0x0f;
+			}
+			sti &= ~S_UPDATE;
 			sa = data;
 			hidx = 0;
 			sti |= SU_CVAL;
