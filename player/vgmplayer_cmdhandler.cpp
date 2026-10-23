@@ -274,7 +274,7 @@
 	{0xFF, 0x05, &VGMPlayer::Cmd_unknown},              // FB
 	{0xFF, 0x05, &VGMPlayer::Cmd_unknown},              // FC
 	{0xFF, 0x05, &VGMPlayer::Cmd_unknown},              // FD
-	{0xFF, 0x05, &VGMPlayer::Cmd_unknown},              // FE
+	{0x30, 0x05, &VGMPlayer::Cmd_Ofs16_Data16},         // FE ZSG-2 (Taito Zoom) register write [provisional, fork only]
 	{0xFF, 0x05, &VGMPlayer::Cmd_unknown},              // FF
 };
 
@@ -412,7 +412,7 @@
 	{0xFF, 0},	// BC
 	{0xFF, 0},	// BD
 	{0xFF, 0},	// BE
-	{0xFF, 0},	// BF
+	{0x30, 0},	// BF ZSG-2 (Taito Zoom) [provisional, fork only]
 };
 
 /*static*/ const UINT8 VGMPlayer::_VGM_RAM_CHIPS[0x40] =
