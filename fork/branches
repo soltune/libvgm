@@ -1,0 +1,5 @@
+# Feature branches merged into chip-player, in this order. Each one is kept rebased on upstream/master.
+fix/gb-noise-envelope-retrigger
+es5505
+zoom
+fork-tools
